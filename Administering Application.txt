@@ -1,0 +1,107 @@
+Administering Application Environments in Kubernetes
+Introduction
+Kubernetes includes a variety of features that can simplify the process of administering robust applications. In this lab, you will have the opportunity to practice your application administration skills in Kubernetes by building a dev environment, retrieving logs, and running an administrative job. This will help you build familiarity with the ways in which you can administer Kubernetes applications.
+
+Solution
+Log in to the lab server using the credentials provided:
+
+ssh cloud_user@<PUBLIC_IP_ADDRESS>
+Note: When copying and pasting code into Vim from the lab guide, first enter :set paste (and then i to enter insert mode) to avoid adding unnecessary spaces and hashes. To save and quit the file, press Escape followed by :wq. To exit the file without saving, press Escape followed by :q!.
+
+Create a Development Environment in the Cluster
+Create a new Namespace called dev:
+
+kubectl create namespace dev
+Make copies of the deployment YAML files:
+
+cp pirate-day-backend.yml pirate-day-backend-dev.yml
+cp pirate-day.yml pirate-day-dev.yml
+Open pirate-day-backend-dev.yml:
+
+vi pirate-day-backend-dev.yml
+Change the NodePort used to expose the Service:
+
+ports:
+- protocol: TCP
+  port: 30083
+  nodePort: 30083
+  targetPort: 3000
+Save and exit the file by pressing Escape followed by :wq.
+
+Open pirate-day-dev.yml:
+
+vi pirate-day-dev.yml
+For the ConfigMap, be sure to leave the actual IP address value for $PUBLIC_IP in the file, but change the port to 30083:
+
+data:
+  __ENV.js: |
+    window.__ENV = {"REACT_APP_API":"http://$PUBLIC_IP:30083"}
+
+...
+
+ports:
+- protocol: TCP
+  port: 30082
+  nodePort: 30082
+  targetPort: 5000
+Save and exit the file by pressing Escape followed by :wq.
+
+Deploy the application to the dev Namespace:
+
+kubectl apply -f pirate-day-backend-dev.yml -n dev
+kubectl apply -f pirate-day-dev.yml -n dev
+Check the status of the pods:
+
+kubectl get pods -n dev
+In a new browser tab, navigate to: <K8S_SERVER_PUBLIC_IP>:30082
+
+Retrieve Container Logs
+Get a list of Pods in the production Namespace:
+
+kubectl get pods -n production
+Copy the name of the frontend Pod and paste it into a text file.
+
+Retrieve the frontend Pod's logs:
+
+kubectl logs <FRONTEND_POD_NAME> -n production
+Save the logs to a file:
+
+kubectl logs <FRONTEND_POD_NAME> -n production > /home/cloud_user/production-frontend.log
+View the logs:
+
+cat /home/cloud_user/production-frontend.log
+Run the Admin Process
+Create the cleanup-job.yml file:
+
+vi cleanup-job.yml
+Add the following to the file:
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cleanup-job
+spec:
+  template:
+    spec:
+      containers:
+      - name: pirate-day
+        image: linuxacademycontent/pirate-day:0.0.4
+        command: ["node",  "cleanup.js"]
+      restartPolicy: Never
+  backoffLimit: 4
+Save and exit the file by pressing Escape followed by :wq.
+
+Deploy the cleanup process:
+
+kubectl apply -f cleanup-job.yml -n production
+Check the Job status:
+
+kubectl get jobs -n production
+Get the Job Pod's name:
+
+kubectl get pods -n production
+Copy the Job Pod name and paste it into a text file.
+
+Get the Job Pod's logs:
+
+kubectl logs <JOB_POD_NAME> -n production

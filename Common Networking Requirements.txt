@@ -1,0 +1,133 @@
+Now then networking's always been important.
+I'm not saying it hasn't okay,
+but right now in today's cloud native microservices world,
+it is way more important than it's ever been in the past.
+So if you already think
+that it's the center of the world, right?
+Well I'm formally upgrading it
+to the center of the universe
+and actually the central starting point
+of all parallel universes, have some of that.
+Anyway, look, thinking about it, right?
+In a modern app, every piece of logic
+seems to be its own microservice these days.
+And each one of those microservices
+is a discrete network end point.
+So it has its own IP address
+and of course they're all talking to each other
+like all of the time.
+So, if you've got a crappy network,
+you're gonna have a crappy app
+and that's just bad for business.
+Now I like a good picture, right?
+So back in ye olden days,
+we'd deploy one massive honkin' app,
+the technical term monolith.
+So it was one big beast with one IP.
+And when you fired this thing up,
+you prayed that you'd never have to touch it again.
+Anyway, look, the point is, right,
+every conceivable piece of code and logic was in there.
+One big app and one endpoint on the network
+with a sacred static IP address, yeah.
+Entered by hand into the network and spreadsheet.
+Remember those, yeah?
+But there's more, right?
+They'd often have manual entries in DNS (chuckles).
+I'm not kidding you right?
+I've worked at places where I knew by heart
+the IP addresses of some of the applications.
+That is literally how static applications
+and networks used to be.
+Anyway, look, that was then,
+and this is now, and my goodness,
+the world is a different place now
+and a better one for sure.
+So monoliths are on their way out, right?
+And we're building things more like this, whoa.
+Well, it's the same app, right?
+But instead of lumping everything together
+in like a single binary or whatever,
+we split out all the different functions
+and we code them separately.
+And yeah, it brings a ton of benefits, right?
+Like it's way easier to iterate on functionality
+and book fix and scale and canary bells
+and all the other good stuff
+that we like to do today, right?
+Though, I'll give you a troubleshooting can be a bit tricky,
+but generally speaking, the pros outweigh the cons.
+Well, on the network in front,
+all of these services here are end points.
+So they all need IPs,
+and they all need to know how to find each other.
+So we need a solid and a dynamic DNS, right?
+I mean these end points are coming and going like mad.
+Well look, at least compared to traditional apps
+that come in and go in like mad.
+The point is right,
+the churn on IPs and the likes on the network these days,
+it is incredible.
+So, big and scalable networks are mandatory
+as is service discovery.
+I mean when you've got so much stuff out there
+and everything is constantly talking
+and publishing APIs and stuff,
+and don't forget the churn, remember.
+Well in that situation, let me tell you, service discovery.
+So being able to find your stuff reliably,
+it's like gold.
+Now actually, when I talk about churn,
+I should probably be clear about a couple of things.
+One, huge messy networks with a lot of churn.
+This is the new normal.
+I mean, look, you can pretend it's not,
+but you won't escape it forever.
+I suggest you embrace rather than trying to hide, okay?
+Also though by churn I'm talking about end points
+being added and removed from the network
+when things like scaling operations happen.
+So let's say you scale a web service app,
+I don't know, like say you need more instances
+of the web front-end cope with demand,
+while that's adding more end points,
+then you scale it back down,
+you're taking those end points away.
+But it's not just scaling, it's rolling updates,
+it's rollbacks, it's canaries, it's blue greens,
+it's failures, it's everything, right?
+All the cool stuff that we do with our apps today,
+they are throwing things on and off the network
+all of the time.
+And this is real stuff, right?
+I mean there are plenty of places
+where this kind of thing is business as usual
+Monday through Sunday,
+and okay if it's not business as usual where you are,
+keep an eye out, right?
+Because it probably will be one day.
+So, in the cloud native world that we're moving to,
+applications are demanding
+that networks are dynamic and scalable
+can handle massive IP churn
+and provide solid service discovery.
+Well, lucky for us Kubernetes has us covered.
+And you know what?
+Like Kubernetes itself doesn't, the community does.
+So as we crack on, right, we'll be seeing big flat networks,
+scalable DNS load balances and loads more, right.
+And you know what?
+It's never been easier, because it's all done in software.
+So when you're doing this in the lab
+or even in production in the cloud, right,
+there's no need for racks of expensive network in 10.
+Yeah, okay, and production on-prem, fair enough,
+you might wanna be integrating an augmenting
+with some high end networking kit fair play, okay.
+But what we're talking about here
+and what we're gonna see as we crack on,
+it's all software defined
+and really simple to configure and get up and running.
+Anyway, look I've waffled more than I planned to here,
+so let's finish that and switch over
+and look for some networking stuff in the sample app.

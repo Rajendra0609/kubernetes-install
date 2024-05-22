@@ -1,0 +1,63 @@
+Scaling with Stateless Containers in Kubernetes
+Introduction
+Stateless applications are a great tool to help facilitate robustness and high availability. In this lab, you will get hands-on with stateless containers. You will have the opportunity to design an application with stateless containers, and you will be able to see how easy it is to scale stateless applications in Kubernetes.
+
+Solution
+Log in to the lab server using the credentials provided:
+
+ssh cloud_user@<PUBLIC_IP_ADDRESS>
+You will need a Docker Hub account to complete this lab.
+
+Note: When copying and pasting code into Vim from the lab guide, first enter :set paste (and then i to enter insert mode) to avoid adding unnecessary spaces and hashes. To save and quit the file, press Escape followed by :wq. To exit the file without saving, press Escape followed by :q!.
+
+Configure the App's Containers to Be Stateless
+Open pirate-day.yml:
+
+vi pirate-day.yml
+Make the container file system read-only (you will need to create a writable emptyDir volume for the /tmp path):
+
+      containers:
+      - name: pirate-day
+        image: linuxacademycontent/pirate-day:0.0.3
+        securityContext:
+          readOnlyRootFilesystem: true
+        command: ["serve", "build"]
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+          readOnly: false
+
+        ...
+
+      volumes:
+      - name: tmp
+        emptyDir: {}
+
+      ...
+Save and exit the file by pressing Escape followed by :wq.
+
+Apply the changes:
+
+kubectl apply -f pirate-day.yml
+Check the status of the Pods:
+
+kubectl get pods
+You should see the new replicas are running.
+
+Scale the Application Up
+Reopen pirate-day.yml:
+
+vi pirate-day.yml
+Change the number of replicas to 5:
+
+spec:
+  replicas: 5
+Save and exit the file by pressing Escape followed by :wq.
+
+Apply the changes:
+
+kubectl apply -f pirate-day.yml
+View the list of Pods to see the new replicas.
+
+kubectl get pods
+There should now be 5 replicas listed.

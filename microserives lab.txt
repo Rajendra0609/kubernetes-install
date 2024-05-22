@@ -1,0 +1,95 @@
+Using Microservices in Kubernetes
+Introduction
+One of the greatest strengths of Kubernetes is how it simplifies networking from the perspective of an application designer. In this lab, you will have the chance to explore microservice design in Kubernetes by wiring an application to its backing services. You will also be able to smoothly perform a rolling update on this application using the architecture you have built.
+
+Solution
+Log in to the lab server using the credentials provided:
+
+ssh cloud_user@<PUBLIC_IP_ADDRESS>
+Note: When copying and pasting code into Vim from the lab guide, first enter :set paste (and then i to enter insert mode) to avoid adding unnecessary spaces and hashes. To save and quit the file, press Escape followed by :wq. To exit the file without saving, press Escape followed by :q!.
+
+Implement the Backing Service
+Create the pirate-day-backend-svc.yml file:
+
+vi pirate-day-backend-svc.yml
+Add the following to the file in order to create a NodePort Service called pirate-day-backend-svc for this backing service with the nodePort 30081:
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: pirate-day-backend-svc
+spec:
+  type: NodePort
+  selector:
+    app: pirate-day-backend
+  ports:
+  - protocol: TCP
+    port: 30081
+    nodePort: 30081
+    targetPort: 3000
+Save and exit the file by pressing Escape followed by :wq.
+
+Create the Service:
+
+kubectl apply -f pirate-day-backend-svc.yml
+Test the Service:
+
+curl localhost:30081
+You should see a message that says Nope!.
+
+Set Up the Kubernetes Deployment
+Create the pirate-day-dep.yml file:
+
+vi pirate-day-dep.yml
+Add the following to the file in order to create the Deployment using the configuration detailed in the second objective on the lab page:
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pirate-day-dep
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: pirate-day-frontend
+  template:
+    metadata:
+      labels:
+        app: pirate-day-frontend
+    spec:
+      containers:
+      - name: pirate-day
+        image: linuxacademycontent/pirate-day:0.0.2
+        volumeMounts:
+        - name: pirate-config
+          mountPath: /usr/src/app/.env
+          subPath: .env
+          readOnly: true
+      volumes:
+      - name: pirate-config
+        configMap:
+          name: pirate-config
+          items:
+          - key: .env
+            path: .env
+Save and exit the file by pressing Escape followed by :wq.
+
+Create the Deployment:
+
+kubectl apply -f pirate-day-dep.yml
+Test your app in the browser using the K8s Server public IP at http://<K8s_SERVER_PUBLIC_IP>:30080.
+
+Perform a Rolling Update
+Edit the Deployment:
+
+kubectl edit deployment pirate-day-dep
+Scroll down to locate the - image line in the containers spec, and change the image version:
+
+    spec:
+      containers:
+      - image: linuxacademycontent/pirate-day:0.0.3
+Save and exit the file by pressing Escape followed by :wq.
+
+Check the Pods to see the new version roll out:
+
+kubectl get pods

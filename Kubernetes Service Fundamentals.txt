@@ -1,0 +1,115 @@
+Dig in a bit deeper.
+This is what I like.
+It's what I live for.
+Anyway, we've got this big flat network
+where every Pod can see every other Pod,
+and it's fabulous, right?
+It really is.
+But Pods, they're ephemeral.
+They come and go.
+So, this bunch of Pods here, right?
+I don't know, imagine they're serving
+an internal search API for an app, yeah?
+Well, right now we've got two,
+and each one's got an IP,
+and then of course, we've got other components
+of the app in the cluster that are using it;
+however, if demand ramps and you scale a Service,
+each time you do, you're adding new Pods with new IPs.
+Then, when you scale back down, you're taking them away.
+And the same goes when nodes fail.
+You're losing Pods with IPs.
+Sure, I mean, Kubernetes recreates those failed Pods
+under the nodes, but those come with new IPs,
+so how does everything else
+that's wanting to use the search API here
+keep up with which Pods exist and are healthy?
+Enter Services.
+Now, and there's actually quite a lot to Services.
+Without their core,
+they're a stable abstraction point for a bunch of Pods.
+So, what we do here, right,
+is we create a Service object,
+and we logically put it in front of the Pods.
+Then, at a high level, we say, "You know what?
+Instead of trying to hit individual Pods down here
+that can come and go, hit the Service instead."
+And obviously, the Service's clever enough
+to handle all the churn
+and the stuff going on with the Pods behind it,
+but that's the gist, right?
+OK, but how does it actually work?
+Well, for starters, right,
+every Service gets a name and an IP.
+And there's a couple things to note
+about the name in IP, right?
+Firstly, they're stable.
+Kubernetes guarantees that once you create a Service,
+its name and IP will and never change for its entire life.
+Sweet.
+That solves the reliability issue of Pods.
+Second, though.
+The name and IP gets registered
+with the cluster's built-in DNS, or add-on DNS, yeah?
+So every Kubernetes cluster has a native DNS Service.
+I mean, you might have to manually start it, OK,
+but every cluster can have a native DNS Service,
+and every Pod in a cluster knows how to use it.
+So in the example on screen, right?
+It means every single Pod in our cluster
+can resolve search API here and reach this Service.
+It's beautifully simple.
+Well, that sorts out the front end of the Service.
+Think of Services here as low balances or proxies.
+They've got a frontend config and also a backend one.
+Well on the backend, it needs to know which Pods
+to send the traffic onto, yeah?
+Well, we could do that with a label selector.
+Now, this here example's saying, "OK,
+"balance traffic across all Pods in the cluster
+"with this label here,"
+and you know what?
+We can list multiple labels and what have you, right?
+But this is the basic config.
+This is the name in the IP on the front,
+and maybe a port as well.
+Hit me on this.
+And when you do, I'll balance your traffic
+across all of the Pods in the cluster with this label...
+Which, again, is cool and all, right?
+But how does the Service actually know
+which Pods are alive and kicking?
+Well, I'm glad you asked!
+You see, when you create a Service object
+with a label selector,
+Kubernetes also creates another object
+on the cluster called an "endpoint object,"
+and what that is is a list of Pod IPs and ports
+that match the Service's label selector.
+So, in our example, the endpoint object
+for the Service will have three entries,
+one for each of the three Pods, yeah?
+But the cool thing?
+The Service object is always watching the API server
+to see if new Pods that match its selector
+are being added or removed,
+and as they are, it automatically updates the list
+in the endpoint object.
+Right, so the endpoint object itself
+always has the same name
+as the Surface object it's associated with,
+and it is a list of Pods
+that the Service can send requests to.
+So, a client makes a request
+into this frontend config of the Service,
+and then for the Service to know how to forward requests on,
+instead of doing some on the fly lookup
+to see which Pods on the cluster
+actually currently match the label selector,
+it just picks one from the endpoint list
+'cause it's always up-to-date.
+Simples.
+Now, then, Services are powerful,
+and there's a lot to them.
+So, comin' up in the next lesson,
+we're gonna take a look at the three major types of Service.

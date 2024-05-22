@@ -1,0 +1,103 @@
+Deploying and Configuring Apps in Kubernetes
+Introduction
+Kubernetes is a great tool for running applications. In this lab, you will have a chance to get hands-on with the process of deploying and configuring Kubernetes applications all the way from code to K8s. You will create a Git repository for your code, build a container image for the application using Docker, and run and configure the application in a Kubernetes cluster.
+
+Solution
+Log in to the lab server using the credentials provided:
+
+ssh cloud_user@<PUBLIC_IP_ADDRESS>
+You will need a Docker Hub account to complete this lab.
+
+Note: When copying and pasting code into Vim from the lab guide, first enter :set paste (and then i to enter insert mode) to avoid adding unnecessary spaces and hashes. To save and quit the file, press Escape followed by :wq. To exit the file without saving, press Escape followed by :q!.
+
+Create a Codebase Using Git
+Clone the source code repository to the server:
+
+git clone https://github.com/linuxacademy/content-k8sapps-is-it-pirate-day
+Change directory:
+
+cd content-k8sapps-is-it-pirate-day
+View the source code files:
+
+ls
+Build a Docker Image for the App with All Needed Dependencies
+Open the Dockerfile:
+
+vi Dockerfile
+Add the following (just before the EXPOSE directive) in order to install the serve package within the resulting image:
+
+...
+
+RUN yarn global add serve
+
+EXPOSE 5000
+...
+Save and exit the file by pressing Escape followed by :wq.
+
+Build the image, supplying your Docker Hub username as part of the image tag:
+
+docker build --target main -t <YOUR_DOCKER_HUB_USERNAME>/pirate-day:0.0.1 .
+It may take a few minutes to finish running.
+
+Log in to Docker Hub:
+
+docker login
+Enter your Docker Hub username and password at the prompt.
+
+Push the image to Docker Hub:
+
+docker push <YOUR_DOCKER_HUB_USERNAME>/pirate-day:0.0.1
+Deploy the Application to Kubernetes with the Necessary Config
+Create the ConfigMap file:
+
+vi pirate-config.yml
+Add the following to the file:
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pirate-config
+data:
+  .env: |
+    REACT_APP_PIRATE_MESSAGE='No!'
+Save and exit the file by pressing Escape followed by :wq.
+
+Create the ConfigMap:
+
+kubectl apply -f pirate-config.yml
+Create the app Pod file:
+
+vi pirate-day.yml
+Add the following to the file, replacing <YOUR_DOCKER_HUB_USERNAME> with your username:
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pirate-day
+  labels:
+    app: pirate-day
+spec:
+  containers:
+  - name: pirate-day
+    image: <YOUR_DOCKER_HUB_USERNAME>/pirate-day:0.0.1
+    volumeMounts:
+    - name: pirate-config
+      mountPath: /usr/src/app/.env
+      subPath: .env
+      readOnly: true
+  volumes:
+  - name: pirate-config
+    configMap:
+      name: pirate-config
+      items:
+      - key: .env
+        path: .env
+Save and exit the file by pressing Escape followed by :wq.
+
+Create the app Pod:
+
+kubectl apply -f pirate-day.yml
+Make sure it's running:
+
+kubectl get pods
+Access the Pod in the browser at http://<K8S_SERVER_PUBLIC_IP>:30080. You should see your custom message displayed.

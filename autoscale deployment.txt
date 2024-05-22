@@ -1,0 +1,67 @@
+Autoscale a Deployment in Kubernetes
+Introduction
+The Horizontal Pod Autoscaler is a great way to automatically scale Kubernetes applications in response to demands in real time. In this lab, you will have the opportunity to practice your skills with the Horizontal Pod Autoscaler by autoscaling an existing Deployment. This will give you some hands-on experience with autoscaling applications in Kubernetes.
+
+Solution
+Log in to the server using the credentials provided:
+
+ssh cloud_user@<PUBLIC_IP_ADDRESS>
+Configure Resource Requests for the Deployment
+View the contents of the home directory:
+
+ls
+You should see a plantzone.yml file, which is the manifest file for the Deployment.
+
+Open the manifest file for editing:
+
+vi plantzone.yml
+At the end of the file, add a resources line to the bottom of the containers spec for a CPU request of 50m:
+
+resources: 
+  requests:
+    cpu: 50m
+Save and exit by pressing the Escape button and entering :wq.
+
+Apply the changes we made:
+
+kubectl apply -f plantzone.yml
+View the status of our Pods:
+
+kubectl get pods
+You should see that three new Pods have been spun up.
+
+Create an HPA to Autoscale the Deployment
+Create a Horizontal Pod Autoscaler (HPA) using the manifest file, with a minimum of two replicas, a maximum of eight replicas, and a CPU utilization percentage of 50:
+
+kubectl autoscale deployment plantzone --cpu-percent=50 --min=2 --max=8 
+View the HPA that we just created:
+
+kubectl get hpa
+You may need to rerun this command to reflect the metrics that we set.
+
+View the status of our Pods and their CPU utilization:
+
+kubectl top pod
+If your CPU utilization is currently low, you should see it scale down in about five minutes to the minimum of only two replicas.
+
+View the status of the Pods in the Deployment:
+
+kubectl get pods
+You should only see two Pods in the Deployment.
+
+Simulate a Burst of CPU Load and Observe the Autoscaling Behavior
+Communicate with a container on port 30080 to instruct the container to generate some CPU load to consume approximately 250 millicores for 120 seconds:
+
+curl localhost:30080/ConsumeCPU -d "millicores=250&durationSec=120"
+View the status of our Pods' CPU utilization:
+
+kubectl top pod
+You should see the Pods are starting to create some additional CPU load. If you continue running that command, you should start the CPU utilization reach 250m and new additional Pods get created.
+
+Check the status of the HPA:
+
+kubectl get hpa
+View the status of our Pods' CPU utilization:
+
+kubectl top pod
+You should see a lot of new replicas. If you rerun the command after about two minutes, the load should go back down. After five minutes, the HPA should scale down the number of Pods in the Deployment.
